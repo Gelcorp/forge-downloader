@@ -18,7 +18,7 @@ use crate::{
     download_utils,
     forge_installer_profile::{
         v2::{MojangLibrary, Processor},
-        ForgeInstallerProfile,
+        ForgeInstallerProfile, ForgeVersionLibrary,
     },
 };
 
@@ -57,7 +57,7 @@ impl PostProcessors {
         }
     }
 
-    pub fn get_libraries(&self) -> Vec<&MojangLibrary> {
+    pub fn get_libraries(&self) -> Vec<&ForgeVersionLibrary> {
         if self.has_tasks {
             self.profile.get_libraries()
         } else {

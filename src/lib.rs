@@ -1,6 +1,11 @@
 // https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.4-49.0.7/forge-1.20.4-49.0.7-installer.jar
 
-use std::{collections::HashMap, fmt::Display, fs, io::Read, path::PathBuf};
+use std::{
+    fmt::{Debug, Display},
+    fs,
+    io::Read,
+    path::PathBuf,
+};
 
 use chrono::{DateTime, Utc};
 use reqwest::Client;
@@ -8,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha1::{digest::generic_array::GenericArray, Digest, Sha1};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(try_from = "String", into = "String")]
 pub struct Artifact {
     original_descriptor: Option<String>,
@@ -17,6 +22,18 @@ pub struct Artifact {
     pub version: String,
     pub classifier: Option<String>,
     pub ext: String,
+}
+
+impl Debug for Artifact {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_descriptor())
+    }
+}
+
+impl Display for Artifact {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_descriptor())
+    }
 }
 
 impl Artifact {
@@ -97,11 +114,15 @@ impl Into<String> for Artifact {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 #[serde(try_from = "String", into = "String")]
 pub struct Sha1Sum([u8; 20]);
 
 impl Sha1Sum {
+    pub fn new(value: [u8; 20]) -> Self {
+        Self(value)
+    }
+
     pub fn from_reader<T: Read>(value: &mut T) -> Result<Self, Box<dyn std::error::Error>> {
         let mut sha1_hasher = Sha1::new();
         let mut buf = vec![];
@@ -124,6 +145,12 @@ impl TryFrom<String> for Sha1Sum {
 impl Into<String> for Sha1Sum {
     fn into(self) -> String {
         hex::encode(self.0)
+    }
+}
+
+impl Debug for Sha1Sum {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", hex::encode(self.0))
     }
 }
 

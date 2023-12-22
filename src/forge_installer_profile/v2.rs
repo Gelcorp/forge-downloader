@@ -3,6 +3,9 @@ use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 use forge_downloader::{Sha1Sum, Artifact};
 use serde::{ Deserialize, Serialize };
+use serde_json::Value;
+
+use super::ForgeVersionLibrary;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(/*deny_unknown_fields, */ rename_all = "camelCase")]
@@ -22,7 +25,7 @@ pub struct ForgeInstallerProfileV2 {
     pub welcome: String,
     pub data: HashMap<String, DataFile>,
     pub processors: Vec<Processor>,
-    pub libraries: Vec<MojangLibrary>,
+    pub libraries: Vec<ForgeVersionLibrary>,
 
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hide_extract: Option<bool>,
@@ -77,16 +80,16 @@ impl Processor {
 }
 
 // Move to mod
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MojangLibrary {
     // #[serde(default, skip_serializing_if = "Option::is_none")]
     // extract: Option<MojangLibraryExtractRules>,
     pub name: Artifact,
-    pub downloads: Option<MojangLibraryDownloads>,
+    pub downloads: /*Option<*/MojangLibraryDownloads/* >*/,
     // natives:
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MojangLibraryDownloads {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub artifact: Option<MojangArtifact>,
@@ -128,13 +131,16 @@ pub struct ForgeVersionFileV2 {
     pub inherits_from: Option<String>,
     #[serde(rename="type")]
     pub release_type: String,
-    // logging,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    logging: Option<Value>,
     pub main_class: String,
-    // arguments
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub downloads: HashMap<String, Download>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub libraries: Vec<MojangLibrary>,
+
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub arguments: HashMap<String, Value>
 }
 
 #[derive(Debug, Serialize, Deserialize)]
