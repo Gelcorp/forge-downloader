@@ -28,10 +28,10 @@ impl ForgeInstallerProfile {
     if result.is_err() && result2.is_err() {
       debug!("");
       if let Err(err) = &result {
-        debug!("❌ Error V1: {}", err);
+        debug!("Error V1: {}", err);
       }
       if let Err(err) = &result2 {
-        debug!("❌ Error V2: {}", err);
+        debug!("Error V2: {}", err);
       }
       panic!("Couldn't parse installer profile");
     }

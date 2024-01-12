@@ -203,11 +203,11 @@ mod tests {
     let version = versions.get_best_version("1.20.1").unwrap();
 
     let url = version.get_installer_url();
-    println!("☕ Installer jar url: {}", url);
+    println!("Installer jar url: {}", url);
 
     let response = Client::new().get(&url).send().await?;
     if !response.status().is_success() {
-      println!("❌ Couldn't download: {}", response.status());
+      println!("Couldn't download: {}", response.status());
       return Ok(());
     }
     let bytes = response.bytes().await?;
@@ -266,7 +266,7 @@ mod tests {
 
       let response = Client::new().get(&url).send().await?;
       if !response.status().is_success() {
-        println!("❌ Couldn't download {}: {}", full_forge_version, response.status());
+        println!("Couldn't download {}: {}", full_forge_version, response.status());
         // println!("  \\- Error: {}", response.status());
         // continue;
         return Ok(());
@@ -297,12 +297,12 @@ mod tests {
         return Ok(());
       }
     } else {
-      println!("❌ Install profile not found");
+      println!("Install profile not found");
       // continue;
       return Ok(());
       // return Err("Install profile not found".into());
     }
-    println!("✅ OK");
+    println!("OK");
     Ok(())
   }
 }

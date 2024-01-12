@@ -7,7 +7,7 @@ use std::{
 };
 
 use chrono::{ DateTime, Utc };
-use log::{ info, debug, error };
+use log::{ info, error };
 use zip::ZipArchive;
 use crate::{ Sha1Sum, Artifact };
 use serde::{ Deserialize, Serialize };

@@ -178,13 +178,13 @@ impl ForgeClientInstall {
       }
       ForgeInstallerProfile::V2(_) => {
         debug!("Profile manifest version: v2");
-        info!("📦 Extracting version.json...");
+        info!("Extracting version.json...");
 
         let mut file = File::create(version_json)?;
         let bytes = &serde_json::to_vec_pretty(&self.version)?[..];
         file.write_all(bytes)?;
 
-        info!("✅ {} bytes were extracted!", bytes.len());
+        info!("{} bytes were extracted!", bytes.len());
 
         let client_target = self.download_vanilla_client_jar(&versions_root_dir).await?;
 

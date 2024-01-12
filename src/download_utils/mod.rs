@@ -182,7 +182,7 @@ pub async fn download_installed_libraries(
     let artifact = &library.name;
     let checksums = &library.checksums;
     if library.is_side(if is_client { "clientreq" } else { "serverreq" }) && library.enabled {
-      info!("📚 Considering library {} ({}/{})", artifact.get_descriptor(), progress, libraries.len());
+      info!("Considering library {} ({}/{})", artifact.get_descriptor(), progress, libraries.len());
       let lib_path = artifact.get_local_path(&libraries_dir);
       let checksum = Sha1Sum::from_reader(&mut File::open(&lib_path)?)?;
       if lib_path.exists() && !checksums.is_empty() && checksums.contains(&checksum) {
@@ -204,15 +204,15 @@ pub async fn download_installed_libraries(
           debug!("Extract file error: {}", extract_file_result.unwrap_err());
           bad.push(artifact.clone());
         } else {
-          warn!("  ❌ Unmirrored file failed, Mojang launcher should download at next run, non fatal");
+          warn!("  Unmirrored file failed, Mojang launcher should download at next run, non fatal");
         }
       } else {
         grabbed.push(artifact.clone());
       }
     } else if library.is_side(if is_client { "clientreq" } else { "serverreq" }) {
-      warn!("❌ Considering library {}: Not Downloading {}", artifact.get_descriptor(), "{Disabled}");
+      warn!("Considering library {}: Not Downloading {}", artifact.get_descriptor(), "{Disabled}");
     } else {
-      warn!("❌ Considering library {}: Not downloading {}", artifact.get_descriptor(), "{Wrong Side}");
+      warn!("Considering library {}: Not downloading {}", artifact.get_descriptor(), "{Wrong Side}");
     }
     progress += 1;
   }
