@@ -217,7 +217,7 @@ impl ForgeClientInstall {
     optionals: fn(&str) -> bool,
     additional_lib_dirs: Vec<&PathBuf>
   ) -> Result<(), Box<dyn Error>> {
-    info!("🗃️  Downloading libraries...");
+    info!("  Downloading libraries...");
     info!("Found {} additional library directories", additional_lib_dirs.len());
     let mut libraries = vec![];
     libraries.extend(&self.version.libraries.iter().collect::<Vec<_>>()); // Download version libraries
@@ -250,7 +250,7 @@ impl ForgeClientInstall {
   }
 
   pub async fn download_vanilla_client_jar(&self, versions_root: &PathBuf) -> Result<PathBuf, Box<dyn Error>> {
-    info!("☕ Considering minecraft client jar...");
+    info!(" Considering minecraft client jar...");
     let version_vanilla = versions_root.join(self.profile.get_minecraft());
     if fs::create_dir_all(&version_vanilla).is_err() && !version_vanilla.is_dir() {
       if fs::remove_dir(&version_vanilla).is_err() {
