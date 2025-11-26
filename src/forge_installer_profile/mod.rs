@@ -1,6 +1,6 @@
 use std::{ collections::HashMap, io::{ Read, Seek }, path::Path };
 
-use chrono::{ DateTime, Utc };
+use chrono::NaiveDateTime;
 use log::debug;
 use serde::{ Deserialize, Serialize };
 use serde_json::Value;
@@ -74,8 +74,8 @@ pub struct ForgeVersionInfo {
   #[serde(rename = "type")]
   pub release_type: String,
 
-  pub time: DateTime<Utc>,
-  pub release_time: DateTime<Utc>,
+  pub time: NaiveDateTime,
+  pub release_time: NaiveDateTime,
 
   #[serde(default, skip_serializing_if = "Option::is_none")]
   pub inherits_from: Option<String>,

@@ -1,12 +1,9 @@
-use std::{ collections::HashMap, error::Error };
-use reqwest::Client;
+use std::error::Error;
 use serde::{ Deserialize, Serialize };
-use serde_json::Value;
 
 use crate::Artifact;
 
-const PROMOTIONS_URL: &str = "https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json";
-const METADATA_URL: &str = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
+use super::neoforge;
 
 pub struct ForgeVersionHandler {
   pub versions: Vec<ForgeVersionInfo>,
@@ -14,27 +11,27 @@ pub struct ForgeVersionHandler {
 
 impl ForgeVersionHandler {
   pub async fn new() -> Result<Self, Box<dyn Error>> {
-    let promotions = get_promoted_versions().await?;
+    let neoforge_version = neoforge::fetch_neoforge_versions().await?;
+    let neoforge_versions = neoforge::build_list_neoforge_versions(&neoforge_version);
+    let promotions = neoforge::build_promoted_versions(&neoforge_versions);
 
     let mut versions = vec![];
-    for (mc_ver, forge_versions) in list_forge_versions().await? {
+    for (mc_ver, forge_versions) in neoforge_versions {
       let recommended = promotions.get(&format!("{mc_ver}-recommended"));
       let latest = promotions.get(&format!("{mc_ver}-latest"));
 
-      for full_forge_ver in forge_versions {
-        let forge_ver = full_forge_ver.split_once("-").unwrap().1;
-
+      for forge_ver in forge_versions {
         let (forge_ver, suffix) = match forge_ver.split_once("-") {
           Some(parts) => (parts.0, Some(parts.1)),
-          None => (forge_ver, None),
+          None => (forge_ver.as_str(), None),
         };
 
         let recommended = recommended.is_some_and(|ver| ver == forge_ver);
         let latest = latest.is_some_and(|ver| ver == forge_ver);
         versions.push(ForgeVersionInfo {
           mc_version: mc_ver.clone(),
-          forge_version: forge_ver.to_string(),
-          suffix: suffix.map(|s| s.to_string()),
+          neoforge_version: forge_ver.to_string(),
+          suffix: suffix.map(str::to_string),
           latest,
           recommended,
         });
@@ -56,7 +53,7 @@ impl ForgeVersionHandler {
   }
 
   pub fn get_by_forge_version(&self, forge_ver: &str) -> Option<&ForgeVersionInfo> {
-    self.versions.iter().find(|v| v.forge_version == forge_ver)
+    self.versions.iter().find(|v| v.neoforge_version == forge_ver)
   }
 
   pub fn get_recommended_versions(&self) -> Vec<&ForgeVersionInfo> {
@@ -70,7 +67,7 @@ impl ForgeVersionHandler {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ForgeVersionInfo {
   pub mc_version: String,
-  pub forge_version: String,
+  pub neoforge_version: String,
   pub suffix: Option<String>,
   pub latest: bool,
   pub recommended: bool,
@@ -78,37 +75,21 @@ pub struct ForgeVersionInfo {
 
 impl ForgeVersionInfo {
   pub fn get_full_version(&self) -> String {
-    let mut parts: Vec<&str> = vec![&self.mc_version, &self.forge_version];
+    let mut full_version = self.neoforge_version.clone();
     if let Some(suffix) = &self.suffix {
-      parts.push(suffix);
+      full_version.push('-');
+      full_version.push_str(suffix);
     }
-    parts.join("-")
+    full_version
   }
 
   pub fn get_artifact(&self) -> Artifact {
-    let path = format!("net.minecraftforge:forge:{}:installer", self.get_full_version());
+    let path = format!("net.neoforged:neoforge:{}:installer", self.neoforge_version);
     Artifact::try_from(path).unwrap()
   }
 
   pub fn get_installer_url(&self) -> String {
     let path = self.get_artifact().get_path_string();
-    format!("https://maven.minecraftforge.net/{path}")
+    format!("https://maven.neoforged.net/releases/{path}")
   }
-}
-
-// [mc_ver]: "{mc_ver}-{forge_ver}"
-pub async fn list_forge_versions() -> Result<HashMap<String, Vec<String>>, reqwest::Error> {
-  Client::new().get(METADATA_URL).send().await?.json().await
-}
-
-// "{mc_ver}-latest": "{forge_ver}"
-pub async fn get_promoted_versions() -> Result<HashMap<String, String>, Box<dyn Error>> {
-  let result: Value = Client::new().get(PROMOTIONS_URL).send().await?.json().await?;
-
-  let mut promos = HashMap::new();
-  for (mc_version, forge_version) in result["promos"].as_object().unwrap() {
-    let forge_version = forge_version.as_str().unwrap().to_string();
-    promos.insert(mc_version.clone(), forge_version);
-  }
-  Ok(promos)
 }

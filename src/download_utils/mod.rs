@@ -1,4 +1,5 @@
 pub mod forge;
+pub mod neoforge;
 
 use std::{ error::Error, fs::{ self, create_dir_all, File }, io::{ self, ErrorKind, Read, Seek, Write }, path::PathBuf };
 

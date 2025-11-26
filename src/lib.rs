@@ -201,7 +201,7 @@ mod tests {
   #[tokio::test]
   async fn install_test() -> Result<(), Box<dyn std::error::Error>> {
     let versions = ForgeVersionHandler::new().await?;
-    let version = versions.get_best_version("1.20.1").unwrap();
+    let version = versions.get_best_version("1.21.1").unwrap();
 
     let url = version.get_installer_url();
     println!("Installer jar url: {}", url);
@@ -226,7 +226,7 @@ mod tests {
     */
     let mut installer = ForgeClientInstall::new(
       installer_path,
-      PathBuf::from_str("C:/Program Files/Eclipse Adoptium/jdk-17.0.6.10-hotspot/bin/java.exe").unwrap()
+      PathBuf::from_str("C:/Program Files/Eclipse Adoptium/jdk-21.0.4.7-hotspot/bin/java.exe").unwrap()
     )?;
     installer.install_forge(&game_dir, |_| true).await?;
     Ok(())
@@ -255,24 +255,24 @@ mod tests {
     Ok(())
   }
 
-  async fn process_version(full_forge_version: &str, cache_folder: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-    let artifact = Artifact::try_from(format!("net.minecraftforge:forge:{full_forge_version}:installer"))?;
+  async fn process_version(neoforge_version: &str, cache_folder: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    let artifact = Artifact::try_from(format!("net.neoforged:neoforge:{neoforge_version}:installer"))?;
 
     let path = &cache_folder.join(artifact.get_file());
     let mut zip_archive = if path.is_file() {
-      print!("\n💾 Loading {} from cache", full_forge_version);
+      print!("\n💾 Loading {} from cache", neoforge_version);
       ZipArchive::new(Cursor::new(fs::read(path)?))?
     } else {
-      let url = format!("https://maven.minecraftforge.net/{}", artifact.get_path_string());
+      let url = format!("https://maven.neoforged.net/releases/{}", artifact.get_path_string());
 
       let response = Client::new().get(&url).send().await?;
       if !response.status().is_success() {
-        println!("Couldn't download {}: {}", full_forge_version, response.status());
+        println!("Couldn't download {}: {}", neoforge_version, response.status());
         // println!("  \\- Error: {}", response.status());
         // continue;
         return Ok(());
       }
-      print!("\n⏳ Downloading {} ", full_forge_version);
+      print!("\n⏳ Downloading {} ", neoforge_version);
       print!("\n Url: {} ", url);
 
       let bytes = response.bytes().await?.to_vec();
