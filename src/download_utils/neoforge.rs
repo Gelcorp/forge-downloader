@@ -18,11 +18,16 @@ pub async fn fetch_neoforge_versions() -> Result<NeoforgeVersions, Box<dyn std::
 }
 
 pub fn build_list_neoforge_versions(versions: &NeoforgeVersions) -> HashMap<String, Vec<String>> {
-  let version_pattern = Regex::new(r"^(?P<Minecraft_Version>\d*\.\d*)\.(?P<Neo_Version>.+)$").unwrap();
+  let version_pattern = Regex::new(r"^(?:(?P<April_Fools_Version>0\.\d+w\d+\w+)|(?P<Minecraft_Version>\d*\.\d*))\.(?P<Neo_Version>.+)$").unwrap();
   let mut version_list = HashMap::new();
   for neo_version in &versions.versions {
     let matches = version_pattern.captures(neo_version).unwrap();
-    let mc_version = format!("1.{}", matches.name("Minecraft_Version").unwrap().as_str());
+    let mc_version;
+    if let Some(minor_lower) = matches.name("Minecraft_Version") {
+      mc_version = format!("1.{}", minor_lower.as_str());
+    } else {
+      mc_version = matches.name("April_Fools_Version").unwrap().as_str().to_string();
+    }
 
     version_list.entry(mc_version).or_insert_with(Vec::new).push(neo_version.clone());
   }
